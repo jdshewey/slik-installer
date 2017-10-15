@@ -32,8 +32,6 @@ schedule:
   highstate:
     function: state.highstate
     minutes: 60" > /etc/salt/minion
-	systemctl enable salt-master
-	systemctl enable salt-minion
 	cd /srv/salt/
 	git clone https://github.com/jdshewey/salt-formula-katello.git katello
 	cp /srv/salt/katello/examples/katello.sls /srv/pillar
@@ -54,6 +52,7 @@ schedule:
 	setenforce 0
 	sed -i -e 's/SELINUX=enforcing/SELINUX=permissive/g' /etc/sysconfig/selinux 
 	sed -i -e 's/SELINUX=enforcing/SELINUX=permissive/g' /etc/selinux/config 
+	echo "current_console: $( tty )" > /etc/salt/grains
 	systemctl start salt-master
 	systemctl start salt-minion
 	bash -c "exit 1"
@@ -74,6 +73,15 @@ Write it down, then press any key to continue."
 	done
 	echo "Continuing..."
 	sed -i -e "s/^    admin_pass: .*/    admin_pass: $PASSWORD/" /srv/pillar/katello.sls
+	if [ -d /etc/pki/katello ]; then
+		rm -rf /etc/pki/katello
+	fi
+	if [ -d /root/ssl-build ]; then
+		rm -rf /root/ssl-build
+	fi
+	if [ "grep $( hostname ) /etc/hosts | wc -l" -lt "1" ]; then
+		echo "$( ip addr show | grep "inet " | awk '{print $2}' | awk -F '/' '{print $1}' | grep -v "127.0.0.1" | head -n 1 )    $( hostname )" >> /etc/hosts
+	fi
 	sleep 5
 	salt $(hostname) state.apply
 else
