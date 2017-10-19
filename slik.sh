@@ -23,6 +23,9 @@ if [ "$( cat /etc/*release | grep VERSION_ID | awk -F\" '{print $2}' | awk -F. '
 		echo "preserve_hostname: true" >> /etc/cloud/cloud.cfg
 	fi
 	hostnamectl set-hostname $HOST
+	yum -y update
+	mkdir -p /etc/slik
+	rpm -qa |  sed -e "s/-[-.0-9]\+[.sc1]*\.el7[_0-9]*\..*//g" >  /etc/slik/preinstall_rpmlist
 	yum -y install https://repo.saltstack.com/yum/redhat/salt-repo-latest-2.el7.noarch.rpm
 	yum -y install salt-master salt-minion git
 	mkdir -p /srv/pillar /srv/salt
@@ -52,7 +55,7 @@ schedule:
 	setenforce 0
 	sed -i -e 's/SELINUX=enforcing/SELINUX=permissive/g' /etc/sysconfig/selinux 
 	sed -i -e 's/SELINUX=enforcing/SELINUX=permissive/g' /etc/selinux/config 
-	echo "current_console: $( tty )" > /etc/salt/grains
+	echo "current_tty: $( tty )" > /etc/salt/grains
 	systemctl start salt-master
 	systemctl start salt-minion
 	bash -c "exit 1"
@@ -79,11 +82,15 @@ Write it down, then press any key to continue."
 	if [ -d /root/ssl-build ]; then
 		rm -rf /root/ssl-build
 	fi
-	if [ "grep $( hostname ) /etc/hosts | wc -l" -lt "1" ]; then
-		echo "$( ip addr show | grep "inet " | awk '{print $2}' | awk -F '/' '{print $1}' | grep -v "127.0.0.1" | head -n 1 )    $( hostname )" >> /etc/hosts
+	if [ "$(grep $( hostname ) /etc/hosts | wc -l)" -lt "1" ]; then
+#		echo "$( ip addr show | grep "inet " | awk '{print $2}' | awk -F '/' '{print $1}' | grep -v "127.0.0.1" | head -n 1 )    $( hostname )" >> /etc/hosts
+		sed -i -e "s/127\.0\.0\.1\s\+/127\.0\.0\.1   $( hostname ) /g" /etc/hosts
 	fi
 	sleep 5
+	bash -c "while true;  do ps aux | egrep '\/usr\/bin\/yum'; sleep 0.1; done"&
+	PID=$!
 	salt $(hostname) state.apply
+	kill $PID
 else
 	echo "This installer is only supported on CentOS/RedHat 7."
 fi
