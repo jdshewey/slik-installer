@@ -6,11 +6,11 @@ Currently, this script will take your Red Hat 7 / CentOS 7 server and deploy a F
 
 # Usage instructions
 
-yum -y install wget
-wget https://raw.githubusercontent.com/jdshewey/slik-installer/master/slik.sh
-chmod +x slik.sh
+    yum -y install wget
+    wget https://raw.githubusercontent.com/jdshewey/slik-installer/master/slik.sh
+    chmod +x slik.sh
 
-#System Requirements
+# System Requirements
 
  - At least 8 GB of RAM is required for the installer to work properly which is an upstream dependancy on The Foreman installer which requires this amount of RAM to install/operate properly. 
  - Katello recommends at least 250 GB disk space - 50 for mongodb storage and 200 for RPM storage.
