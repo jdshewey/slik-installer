@@ -24,10 +24,11 @@ if [ "$( cat /etc/*release | grep VERSION_ID | awk -F\" '{print $2}' | awk -F. '
 	fi
 	hostnamectl set-hostname $HOST
 	yum -y update
-	mkdir -p /etc/slik
-	rpm -qa |  sed -e "s/-[-.0-9]\+[.sc1]*\.el7[_0-9]*\..*//g" >  /etc/slik/preinstall_rpmlist
+	mkdir -p /etc/slik/rpm-sources-backup
+	cp -rp /etc/yum.repos.d/* /etc/slik/rpm-sources-backup
 	yum -y install https://repo.saltstack.com/yum/redhat/salt-repo-latest-2.el7.noarch.rpm
 	yum -y install salt-master salt-minion git
+	rm -rf /etc/yum.repos.d/*
 	mkdir -p /srv/pillar /srv/salt
 	echo "auto_accept: True" > /etc/salt/master
 	echo "master: $(hostname)
@@ -56,8 +57,6 @@ schedule:
 	sed -i -e 's/SELINUX=enforcing/SELINUX=permissive/g' /etc/sysconfig/selinux 
 	sed -i -e 's/SELINUX=enforcing/SELINUX=permissive/g' /etc/selinux/config 
 	echo "current_tty: $( tty )" > /etc/salt/grains
-	systemctl start salt-master
-	systemctl start salt-minion
 	bash -c "exit 1"
 	while [ "$?" -gt "0" ]; do
 		echo "Enter a password to be used for this deployment [random]:"
@@ -74,7 +73,44 @@ Write it down, then press any key to continue."
 			bash -c "exit 1"
 		fi
 	done
-	echo "Continuing..."
+	bash -c "exit 1"
+	while [ "$?" -gt "0" ]; do
+		echo "Enter the name of your organization [foobar]:"
+		read ORGNAME
+		if [ -z "$ORGNAME" ]; then
+			ORGNAME="foobar"
+		fi
+	done
+	bash -c "exit 1"
+	while [ "$?" -gt "0" ]; do
+		echo "Enter the location of your headquarters [podunk]:"
+		read LOCATION
+		if [ -z "$LOCATION" ]; then
+			LOCATION="podunk"
+		fi
+	done
+	bash -c "exit 1"
+	while [ "$?" -gt "0" ]; do
+		echo "Do you wish to perform an advanced install? [n]:"
+		read ADVANCED
+		case $ADVANCED in
+			y|Y) vi vim /srv/salt/katello/files/katello-answers.yaml
+			   break 2
+			   ;;
+			n|N) break 2
+			   ;;
+	                *)
+			   if [ -z "$ADVANCED" ]; then
+				break 3
+			   fi 
+			   ;;
+		esac
+		bash -c "exit 1"
+	done
+
+	systemctl start salt-master
+	systemctl start salt-minion
+	echo "Continuing... this installation may take a very long time - an hour or more."
 	sed -i -e "s/^    admin_pass: .*/    admin_pass: $PASSWORD/" /srv/pillar/katello.sls
 	if [ -d /etc/pki/katello ]; then
 		rm -rf /etc/pki/katello

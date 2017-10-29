@@ -1,13 +1,13 @@
 #/bin/bash
-rpm -qa |  sed -e "s/-[-.0-9]\+[.sc1]*\.el7[_0-9]*\..*//g" > /tmp/current_rpmlist
-yum remove $( diff /tmp/current_rpmlist /etc/slik/preinstall_rpmlist | grep "<" | awk '{print $2}' | sed -e "s/-[-.0-9]\+[.sc1]*\.el7[_0-9]*\..*//g"  | egrep -v "\.x86_64$|\.noarch$" | tr '\n' ' ' ) python-isodate ipxe-bootimgs libstemmer
-rm -f /tmp/current_rpmlist
+katello-remove
 if [ $? != 0 ]; then
+	yum -y remove salt
+	if [ $? != 0 ]; then
+		rm -rf /etc/slik
+	fi
+	cp -rp /etc/slik/rpm-sources-backup/* /etc/yum.repos.d/
+	rm -rf /etc/salt
 	rm -rf /etc/slik
+	rm -rf /srv/pillar
+	rm -rf /srv/salt
 fi
-
-# TODO:
-# Prompt user to see if they want to delete:
-#/etc/foreman-installer/
-#/etc/httpd/conf.d/pulp.conf
-#/etc/salt
