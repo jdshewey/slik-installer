@@ -1,4 +1,5 @@
 #/bin/bash
+systemctl stop salt-minion
 katello-remove
 if [ $? != 0 ]; then
 	yum -y remove salt
@@ -8,6 +9,7 @@ if [ $? != 0 ]; then
 	cp -rp /etc/slik/rpm-sources-backup/* /etc/yum.repos.d/
 	rm -rf /etc/salt
 	rm -rf /etc/slik
-	rm -rf /srv/pillar
-	rm -rf /srv/salt
+#	rm -rf /srv/pillar
+#	rm -rf /srv/salt
 fi
+systemctl start salt-minion 2>> /dev/null

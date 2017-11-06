@@ -123,10 +123,7 @@ Write it down, then press any key to continue."
 		sed -i -e "s/127\.0\.0\.1\s\+/127\.0\.0\.1   $( hostname ) /g" /etc/hosts
 	fi
 	sleep 5
-	bash -c "while true;  do ps aux | egrep '\/usr\/bin\/yum'; sleep 0.1; done"&
-	PID=$!
 	salt $(hostname) state.apply
-	kill $PID
 else
 	echo "This installer is only supported on CentOS/RedHat 7."
 fi
