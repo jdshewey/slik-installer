@@ -35,10 +35,14 @@ if [ "$( cat /etc/*release | grep VERSION_ID | awk -F\" '{print $2}' | awk -F. '
 schedule:
   highstate:
     function: state.highstate
-    minutes: 60" > /etc/salt/minion
+    minutes: 60
+use_superseded:
+  - module.run" > /etc/salt/minion
 	cd /srv/salt/
 	git clone https://github.com/jdshewey/salt-formula-katello.git katello
 	cp /srv/salt/katello/examples/katello.sls /srv/pillar
+	mkdir -p /srv/salt/_modules
+        ln -s /srv/salt/katello/_modules/katello.py /srv/salt/_modules/katello.py
 	echo "base:
   $(hostname):
     - katello" > /srv/salt/top.sls
