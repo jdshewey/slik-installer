@@ -40,7 +40,7 @@ use_superseded:
   - module.run" > /etc/salt/minion
 	cd /srv/salt/
 	git clone https://github.com/jdshewey/salt-formula-katello.git katello
-	cp /srv/salt/katello/examples/katello.sls /srv/pillar
+	ln -s /srv/salt/katello/examples/katello.sls /srv/pillar/katello.sls
 	mkdir -p /srv/salt/_modules
         ln -s /srv/salt/katello/_modules/katello.py /srv/salt/_modules/katello.py
 	echo "base:
