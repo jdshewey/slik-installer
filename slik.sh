@@ -42,7 +42,7 @@ use_superseded:
 	git clone https://github.com/jdshewey/salt-formula-katello.git katello
 	ln -s /srv/salt/katello/examples/katello.sls /srv/pillar/katello.sls
 	mkdir -p /srv/salt/_modules
-        ln -s /srv/salt/katello/_modules/katello.py /srv/salt/_modules/katello.py
+	ln -s /srv/salt/katello/_modules/katello.py /srv/salt/_modules/katello.py
 	echo "base:
   $(hostname):
     - katello" > /srv/salt/top.sls
@@ -66,7 +66,14 @@ use_superseded:
 		echo "Enter a password to be used for this deployment [random]:"
 		read PASSWORD
 		if [ -z "$PASSWORD" ]; then
-			PASSWORD="$( (< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c12) )"
+			bash -c "exit 1"
+			while [ "$?" -gt "0" ]; do
+				echo $PASSWORD | grep -P "^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,32}$" >> /dev/null
+				if [ "$?" -gt "0" ]; then
+					PASSWORD="$( (< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c12) )"
+					bash -c "exit 1"
+				fi
+			done
 			echo "Your password is: $PASSWORD
 Write it down, then press any key to continue."
 			read -n 1 -s -p ""
@@ -85,6 +92,7 @@ Write it down, then press any key to continue."
 			ORGNAME="foobar"
 		fi
 	done
+	sed -e -i "s/foobar/$ORGNAME/g" /srv/pillar/katello.sls 
 	bash -c "exit 1"
 	while [ "$?" -gt "0" ]; do
 		echo "Enter the location of your headquarters [podunk]:"
@@ -93,6 +101,7 @@ Write it down, then press any key to continue."
 			LOCATION="podunk"
 		fi
 	done
+	sed -e -i "s/podunk/$LOCATION/g" /srv/pillar/katello.sls 
 	bash -c "exit 1"
 	while [ "$?" -gt "0" ]; do
 		echo "Do you wish to perform an advanced install? [n]:"
@@ -103,7 +112,7 @@ Write it down, then press any key to continue."
 			   ;;
 			n|N) break 2
 			   ;;
-	                *)
+			*)
 			   if [ -z "$ADVANCED" ]; then
 				break 3
 			   fi 
