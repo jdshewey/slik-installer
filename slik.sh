@@ -92,7 +92,7 @@ Write it down, then press any key to continue."
 			ORGNAME="foobar"
 		fi
 	done
-	sed -e -i "s/foobar/$ORGNAME/g" /srv/pillar/katello.sls 
+	sed -i -e "s/foobar/$ORGNAME/g" /srv/pillar/katello.sls 
 	bash -c "exit 1"
 	while [ "$?" -gt "0" ]; do
 		echo "Enter the location of your headquarters [podunk]:"
@@ -101,7 +101,7 @@ Write it down, then press any key to continue."
 			LOCATION="podunk"
 		fi
 	done
-	sed -e -i "s/podunk/$LOCATION/g" /srv/pillar/katello.sls 
+	sed -i -e "s/podunk/$LOCATION/g" /srv/pillar/katello.sls 
 	bash -c "exit 1"
 	while [ "$?" -gt "0" ]; do
 		echo "Do you wish to perform an advanced install? [n]:"
@@ -136,7 +136,7 @@ Write it down, then press any key to continue."
 		sed -i -e "s/127\.0\.0\.1\s\+/127\.0\.0\.1   $( hostname ) /g" /etc/hosts
 	fi
 	sleep 5
-	salt $(hostname) state.apply
+	salt-call state.apply
 else
 	echo "This installer is only supported on CentOS/RedHat 7."
 fi
