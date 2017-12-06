@@ -11,6 +11,7 @@ if [ $? == 0 ]; then
 	rm -rf /var/lib/mongodb
 	rm -rf /etc/salt
 	rm -rf /etc/slik
+        rm -rf /var/www/html/pub/*
 	rm -rf /srv/pillar
 	rm -rf /srv/salt
 fi

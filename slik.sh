@@ -29,7 +29,7 @@ if [ "$( cat /etc/*release | grep VERSION_ID | awk -F\" '{print $2}' | awk -F. '
 	yum -y install https://repo.saltstack.com/yum/redhat/salt-repo-latest-2.el7.noarch.rpm
 	yum -y install salt-master salt-minion git
 	rm -rf /etc/yum.repos.d/*
-	mkdir -p /srv/pillar /srv/salt
+	mkdir -p /srv/pillar/katello/client /srv/salt
 	echo "auto_accept: True" > /etc/salt/master
 	echo "master: $(hostname)
 schedule:
@@ -39,13 +39,17 @@ schedule:
 use_superseded:
   - module.run" > /etc/salt/minion
 	cd /srv/salt/
-	git clone https://github.com/jdshewey/salt-formula-katello.git katello
-	ln -s /srv/salt/katello/examples/katello.sls /srv/pillar/katello.sls
+	git clone https://github.com/jdshewey/salt-formula-katello.git katello/
+	cp /srv/salt/katello/examples/server/katello.sls /srv/pillar/katello/server.sls
+#	ln -s /srv/salt/katello/examples/server/katello.sls /srv/pillar/katello/server.sls # should only be used by developers
 	mkdir -p /srv/salt/_modules
 	ln -s /srv/salt/katello/_modules/katello.py /srv/salt/_modules/katello.py
 	echo "base:
+  '* and not $(hostname)':
+    - katello.client
   $(hostname):
-    - katello" > /srv/salt/top.sls
+    - katello.server
+    - katello.client.katello" > /srv/salt/top.sls
 	echo "base:
   $(hostname):
     - katello" > /srv/pillar/top.sls
